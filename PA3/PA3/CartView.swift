@@ -3,34 +3,55 @@ import SwiftUI
 struct CartView: View {
     @EnvironmentObject var state: AppState
 
+    private var items: [(product: Product, qty: Int)] {
+        state.cart.compactMap { (id, qty) in
+            guard let product = state.products.first(where: { $0.id == id }) else { return nil }
+            return (product, qty)
+        }
+        .sorted { $0.product.id < $1.product.id }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
                 List {
-                    ForEach(state.cart.keys.sorted(), id: .self) { id in
-                        if let product = state.products.first(where: { $0.id == id }) {
-                            CartRow(product: product)
-                        }
+                    ForEach(items, id: \.product.id) { item in
+                        CartRow(product: item.product)
                     }
                 }
-                HStack {
-                    Text("Total: $")
-                    Spacer()
-                    Text("$\(state.totalAmount(), specifier: "%.2f")")
-                }
-                .padding()
-                Button("Pagar ahora") {}
-                    .padding()
-                    .buttonStyle(.borderedProminent)
+                totalBar
+                payButton
             }
             .navigationTitle("Cart")
         }
+    }
+
+    private var totalBar: some View {
+        HStack {
+            Text("Total:")
+            Spacer()
+            Text("$\(state.totalAmount(), specifier: "%.2f")")
+        }
+        .padding()
+    }
+
+    private var payButton: some View {
+        Button("Pagar ahora") {}
+            .padding()
+            .buttonStyle(.borderedProminent)
     }
 }
 
 struct CartRow: View {
     @EnvironmentObject var state: AppState
     let product: Product
+
+    private func quantityBinding() -> Binding<Int> {
+        Binding(
+            get: { state.cart[product.id] ?? 1 },
+            set: { state.updateQuantity(product: product, quantity: $0) }
+        )
+    }
 
     var body: some View {
         HStack {
@@ -55,10 +76,7 @@ struct CartRow: View {
                     .font(.subheadline)
             }
             Spacer()
-            Stepper(value: Binding(
-                get: { state.cart[product.id] ?? 1 },
-                set: { state.updateQuantity(product: product, quantity: $0) }
-            ), in: 1...99) {
+            Stepper(value: quantityBinding(), in: 1...99) {
                 Text("\(state.cart[product.id] ?? 1)")
             }
             Button(action: {
