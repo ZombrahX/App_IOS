@@ -1,21 +1,18 @@
-//
-//  ContentView.swift
-//  PA3
-//
-//  Created by user269177 on 6/10/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appState = AppState()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            HomeView()
+                .tabItem { Label("Home", systemImage: "house") }
+            FavoritesView()
+                .tabItem { Label("Favorites", systemImage: "heart") }
+            CartView()
+                .tabItem { Label("Cart", systemImage: "cart") }
         }
-        .padding()
+        .environmentObject(appState)
     }
 }
 
