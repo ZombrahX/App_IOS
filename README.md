@@ -7,5 +7,5 @@ Cuenta con tres pestañas principales:
 - **Favorites**: lista con los productos marcados como favoritos.
 - **Cart**: lista de productos agregados al carrito con control de cantidades y cálculo de total.
 
-Las funciones de favoritos y carrito solo modifican el estado en memoria para fines de demostración.
+Las funciones de favoritos y carrito persisten localmente utilizando `UserDefaults` para mantener la selección entre sesiones.
 
