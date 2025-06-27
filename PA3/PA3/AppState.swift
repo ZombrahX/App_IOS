@@ -5,8 +5,20 @@ class AppState: ObservableObject {
     @Published var products: [Product] = []
     @Published var detailSelection: Int?
 
-    @Published var favorites: Set<Int> = []
-    @Published var cart: [Int: Int] = [:] // productId -> quantity
+    @Published var favorites: Set<Int> = [] {
+        didSet { saveFavorites() }
+    }
+    @Published var cart: [Int: Int] = [:] { // productId -> quantity
+        didSet { saveCart() }
+    }
+
+    private let favoritesKey = "favorites"
+    private let cartKey = "cart"
+
+    init() {
+        loadFavorites()
+        loadCart()
+    }
 
     func toggleFavorite(product: Product) {
         if favorites.contains(product.id) {
@@ -40,5 +52,33 @@ class AppState: ObservableObject {
             }
         }
         return total
+    }
+
+    private func loadFavorites() {
+        guard let data = UserDefaults.standard.data(forKey: favoritesKey),
+              let set = try? JSONDecoder().decode(Set<Int>.self, from: data) else {
+            return
+        }
+        favorites = set
+    }
+
+    private func saveFavorites() {
+        if let data = try? JSONEncoder().encode(favorites) {
+            UserDefaults.standard.set(data, forKey: favoritesKey)
+        }
+    }
+
+    private func loadCart() {
+        guard let data = UserDefaults.standard.data(forKey: cartKey),
+              let dict = try? JSONDecoder().decode([Int: Int].self, from: data) else {
+            return
+        }
+        cart = dict
+    }
+
+    private func saveCart() {
+        if let data = try? JSONEncoder().encode(cart) {
+            UserDefaults.standard.set(data, forKey: cartKey)
+        }
     }
 }
